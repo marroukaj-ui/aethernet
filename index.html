@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AetherNet — Зарубежный IP и Tor</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl/1.0.3/nacl-fast.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0B0F17;--sf:#151D2A;--ac:#00E5FF;--ok:#10B981;--tx:#F8FAFC;--mu:#94A3B8;--bd:#25324A;--er:#F87171}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--tx);font-family:Inter,-apple-system,BlinkMacSystemFont,sans-serif}
+body{padding:env(safe-area-inset-top) 16px calc(40px + env(safe-area-inset-bottom))}
+main{max-width:760px;margin:0 auto}
+.mono{font-family:'JetBrains Mono','SF Mono',monospace}
+.mu{color:var(--mu)}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:14px;padding:20px;margin-top:16px}
+header{display:flex;align-items:center;gap:10px;padding:20px 0 4px;font-weight:700;font-size:1.2rem}
+h2{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);margin:0 0 10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:.75rem 1.1rem;border-radius:10px;border:1px solid var(--bd);background:transparent;color:var(--tx);font:600 .875rem Inter,sans-serif;cursor:pointer;text-decoration:none;transition:.15s}
+.btn:hover:not(:disabled){border-color:var(--ac)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.p{background:var(--ac);border-color:var(--ac);color:#04121A}
+.btn.big{width:100%;padding:1.05rem;font-size:1.05rem}
+.tk{display:block;text-align:left;width:100%;padding:1rem;border:1px solid var(--bd);border-radius:12px;background:transparent;color:var(--tx);cursor:pointer;transition:.15s}
+.tk:hover{border-color:var(--ac)}
+.tk.on{border-color:var(--ac);background:rgba(0,229,255,.08);box-shadow:inset 0 0 0 1px var(--ac)}
+.tk b{display:block;font-size:.95rem;margin-bottom:.2rem}
+.tk span{font-size:.78rem;color:var(--mu);line-height:1.4;display:block}
+.opt{padding:.65rem .5rem;border:1px solid var(--bd);border-radius:10px;background:transparent;color:var(--tx);font:500 .85rem Inter,sans-serif;cursor:pointer}
+.opt:hover{border-color:var(--ac)}
+.opt.on{border-color:var(--ac);background:rgba(0,229,255,.1);color:var(--ac)}
+.grid{display:grid;gap:10px}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.sp{width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:s .7s linear infinite;display:none}
+.ld .sp{display:inline-block}
+@keyframes s{to{transform:rotate(360deg)}}
+.in{width:100%;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:.55rem .7rem;color:var(--tx);font-size:.8rem}
+label{display:block;font-size:.72rem;color:var(--mu);margin:.7rem 0 .25rem}
+details{border:1px solid var(--bd);border-radius:10px;padding:0 14px;margin-top:14px}
+summary{cursor:pointer;padding:.75rem 0;font-weight:600;font-size:.85rem}
+details>div{padding-bottom:14px}
+.st{border-radius:0;border:0;border-bottom:1px solid var(--bd);margin:0}
+.st:last-child{border-bottom:0}
+pre{white-space:pre-wrap;word-break:break-all;background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:.9rem;font-size:.75rem;line-height:1.55;max-height:320px;overflow:auto;margin:0 0 12px}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+#qrw{text-align:center;margin-top:16px}
+#cv{max-width:100%;border-radius:8px}
+#toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom));transform:translate(-50%,16px);background:var(--ok);color:#fff;padding:.6rem 1rem;border-radius:10px;font-weight:600;font-size:.85rem;opacity:0;pointer-events:none;transition:.25s}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+#toast.er{background:#DC2626}
+.hd{display:none!important}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z"/><path d="M9 12l2 2 4-4"/></svg>AetherNet
+</header>
+
+<section class="card">
+  <h2>Задача</h2>
+  <div class="grid">
+    <button class="tk on" data-k="task" data-v="ip"><b>Зарубежный IP</b><span>Туннель AmneziaWG на базе бесплатного Cloudflare WARP. Аккаунт создаётся автоматически.</span></button>
+    <button class="tk" data-k="task" data-v="tor"><b>Tor через AmneziaWG</b><span>Тот же туннель, а Tor запускается внутри него. Провайдер видит только Cloudflare, а выходной IP — зарубежный узел Tor.</span></button>
+  </div>
+  <h2 style="margin-top:18px">Платформа</h2>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(110px,1fr))">
+    <button class="opt on" data-k="plat" data-v="ios">iOS / macOS</button>
+    <button class="opt" data-k="plat" data-v="android">Android</button>
+    <button class="opt" data-k="plat" data-v="windows">Windows</button>
+    <button class="opt" data-k="plat" data-v="router">OpenWRT</button>
+  </div>
+  <button id="go" class="btn p big" style="margin-top:18px"><span class="sp"></span><span>Получить конфигурацию</span></button>
+  <p id="note" class="mu" style="font-size:.8rem;line-height:1.5;margin:12px 0 0"></p>
+  <p id="cnt" class="mu mono" style="font-size:.75rem;margin:8px 0 0"></p>
+  <p id="err" class="hd" style="font-size:.8rem;color:var(--er);margin:10px 0 0;line-height:1.5"></p>
+
+  <details id="adv">
+    <summary>Расширенные настройки (для экспертов)</summary>
+    <div>
+      <label>Метод</label>
+      <select id="mode" class="in">
+        <option value="auto">Авто: WARP, при ошибке — Workers (если задан домен)</option>
+        <option value="warp">Только WARP + AmneziaWG</option>
+        <option value="vless">Только Workers + VLESS</option>
+      </select>
+      <label>WARP: URL регистрации (свой прокси-Worker, если браузер блокирует запрос)</label>
+      <input id="api" class="in mono" spellcheck="false" autocapitalize="off" placeholder="https://api.cloudflareclient.com/v0a884/reg">
+      <label>WARP: Endpoint</label>
+      <input id="ep" class="in mono" list="eps" spellcheck="false" placeholder="162.159.192.1:2408">
+      <datalist id="eps"><option value="162.159.192.1:2408"><option value="162.159.193.1:2408"><option value="162.159.195.1:2408"><option value="188.114.96.1:2408"><option value="188.114.97.1:2408"><option value="188.114.98.1:2408"><option value="188.114.99.1:2408"></datalist>
+      <label>WARP: обфускация</label>
+      <select id="obf" class="in">
+        <option value="warp">Совместимая с WARP: Jc=4, Jmin=40, Jmax=70, S1=S2=0, H1–H4=1–4</option>
+        <option value="full">Полная AWG: Jc=4, Jmin=40, Jmax=70, S1=15, S2=28, случайные H1–H4 (только для сервера AmneziaWG)</option>
+      </select>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div><label>DNS</label><input id="dns" class="in mono" placeholder="1.1.1.1, 1.0.0.1"></div>
+        <div><label>MTU</label><input id="mtu" class="in mono" inputmode="numeric" placeholder="1280"></div>
+      </div>
+      <label>Workers: домен вашего Worker</label>
+      <input id="wd" class="in mono" spellcheck="false" autocapitalize="off" placeholder="my-worker.my-name.workers.dev">
+      <label>Workers: UUID (должен совпадать с UUID в Worker; пусто = случайный)</label>
+      <input id="uid" class="in mono" spellcheck="false" autocapitalize="off">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div><label>Транспорт</label>
+          <select id="tr" class="in"><option value="ws">WebSocket + TLS</option><option value="xhttp">XHTTP (packet-up) + TLS</option></select></div>
+        <div><label>Path</label><input id="vp" class="in mono" placeholder="/"></div>
+      </div>
+      <label>Clean IP Cloudflare</label>
+      <div class="row" style="flex-wrap:nowrap"><input id="cip" class="in mono" spellcheck="false"><button class="btn" id="nip" type="button" style="padding:.5rem .8rem">Другой</button></div>
+    </div>
+  </details>
+</section>
+
+<section class="card hd" id="res">
+  <h2 id="rt">Результат</h2>
+  <pre id="view" class="mono"></pre>
+  <div class="row">
+    <button class="btn p" id="copy">Скопировать</button>
+    <button class="btn" id="dl">Скачать файл</button>
+    <button class="btn" id="rev">Показать ключ</button>
+  </div>
+  <div id="qrw"><canvas id="cv"></canvas><div id="qm" class="mu" style="font-size:.75rem;margin-top:8px"></div></div>
+</section>
+
+<section class="card">
+  <h2 id="gt">Инструкция</h2>
+  <div class="row" id="apps" style="margin-bottom:8px"></div>
+  <div id="steps"></div>
+</section>
+</main>
+<div id="toast" role="status"></div>
+
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const DEF={api:'https://api.cloudflareclient.com/v0a884/reg',ep:'162.159.192.1:2408',dns:'1.1.1.1, 1.0.0.1',mtu:1280,peer:'bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo='};
+const CLEAN=['104.16.132.229','104.17.147.22','104.18.2.161','104.19.229.21','104.20.10.5','172.64.152.23','172.67.73.11','188.114.96.7','188.114.97.3','141.101.120.11','162.159.135.42'];
+const MAX=5,LK='aether_warp';
+const S={task:'ip',plat:'ios',text:'',file:'',mime:'text/plain',kind:'',shown:false};
+
+/* ---------- apps ---------- */
+const AWG={ios:[['AmneziaWG (iOS/macOS)','https://apps.apple.com/app/amneziawg/id6478942365']],android:[['AmneziaWG','https://play.google.com/store/apps/details?id=org.amnezia.awg']],windows:[['AmneziaWG','https://github.com/amnezia-vpn/amneziawg-windows-client/releases']],router:[['amneziawg-openwrt','https://github.com/amnezia-vpn/amneziawg-openwrt/releases']]};
+const VL={ios:[['Streisand','https://apps.apple.com/app/streisand/id6450534064']],android:[['v2rayNG','https://github.com/2dust/v2rayNG/releases']],windows:[['v2rayN','https://github.com/2dust/v2rayN/releases']],router:[]};
+const TOR={ios:[['Onion Browser (iOS)','https://apps.apple.com/app/onion-browser/id519296448'],['Tor Browser (macOS)','https://www.torproject.org/download/']],android:[['Tor Browser','https://www.torproject.org/download/']],windows:[['Tor Browser','https://www.torproject.org/download/']],router:[['Tor на OpenWRT','https://openwrt.org/packages/index/start']]};
+
+/* ---------- utils ---------- */
+const rb=n=>crypto.getRandomValues(new Uint8Array(n));
+const ri=(a,b)=>a+crypto.getRandomValues(new Uint32Array(1))[0]%(b-a+1);
+const b64=b=>btoa(String.fromCharCode(...b));
+const u2b=s=>{s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';return s};
+const pick=a=>a[ri(0,a.length-1)];
+let tm;function toast(m,er){const e=$('#toast');e.textContent=m;e.classList.toggle('er',!!er);e.classList.add('on');clearTimeout(tm);tm=setTimeout(()=>e.classList.remove('on'),2200)}
+function err(m){const e=$('#err');e.textContent=m||'';e.classList.toggle('hd',!m)}
+
+/* ---------- daily limit (WARP registrations) ---------- */
+let memL=null;
+function limGet(){
+  try{const r=JSON.parse(localStorage.getItem(LK));if(r&&r.t>Date.now())return r}catch(e){}
+  if(memL&&memL.t>Date.now())return memL;
+  return{n:0,t:Date.now()+864e5};
+}
+function limSet(r){memL=r;try{localStorage.setItem(LK,JSON.stringify(r))}catch(e){}}
+function limShow(){$('#cnt').textContent=`Регистраций WARP сегодня: ${limGet().n} из ${MAX}`}
+
+/* ---------- X25519 ---------- */
+async function genKeys(){
+  try{
+    const k=await crypto.subtle.generateKey({name:'X25519'},true,['deriveBits']);
+    const j=await crypto.subtle.exportKey('jwk',k.privateKey);
+    return{priv:u2b(j.d),pub:u2b(j.x)};
+  }catch(e){}
+  if(window.nacl){
+    const b=rb(32);b[0]&=248;b[31]&=127;b[31]|=64;
+    return{priv:b64(b),pub:b64(nacl.scalarMult.base(b))};
+  }
+  throw new Error('Браузер не поддерживает генерацию X25519-ключей.');
+}
+
+/* ---------- Method 1: WARP ---------- */
+async function warpRegister(pub,url){
+  const body=JSON.stringify({key:pub,install_id:'',fcm_token:'',tos:new Date().toISOString(),type:'Android',model:'PC',locale:'en_US'});
+  const once=async headers=>{
+    const c=new AbortController(),to=setTimeout(()=>c.abort(),12000);
+    try{
+      const r=await fetch(url,{method:'POST',headers,body,signal:c.signal,cache:'no-store',credentials:'omit'});
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      return await r.json();
+    }finally{clearTimeout(to)}
+  };
+  let j;
+  try{j=await once({'Content-Type':'application/json','CF-Client-Version':'a-6.3-1922'})}
+  catch(e1){
+    try{j=await once({'Content-Type':'text/plain;charset=UTF-8'})}
+    catch(e2){throw new Error('Не удалось зарегистрировать WARP-аккаунт из браузера ('+e2.message+'). Скорее всего, API не разрешает запросы с веб-страниц (CORS). Разверните бесплатный прокси-Worker и укажите его URL в «Расширенных настройках».')}
+  }
+  const c=j&&j.config,a=c&&c.interface&&c.interface.addresses,p=c&&c.peers&&c.peers[0];
+  if(!a||!a.v4||!p||!p.public_key)throw new Error('WARP API вернул неожиданный ответ.');
+  return{peer:p.public_key,v4:a.v4,v6:a.v6};
+}
+async function buildWarp(){
+  const g=id=>$('#'+id).value.trim();
+  const api=g('api')||DEF.api,ep=g('ep')||DEF.ep,dns=g('dns')||DEF.dns,mtu=g('mtu')?+g('mtu'):DEF.mtu;
+  if(!/^https:\/\/\S+$/i.test(api))throw new Error('URL регистрации должен начинаться с https://');
+  if(!/^(\d{1,3}(\.\d{1,3}){3}|\[[0-9a-f:]+\]|[a-z0-9.-]+):\d{1,5}$/i.test(ep)||+ep.split(':').pop()>65535)throw new Error('Endpoint: формат host:port');
+  if(!/^[0-9a-f:., ]+$/i.test(dns))throw new Error('DNS: только IP-адреса через запятую');
+  if(!(mtu>=1200&&mtu<=1500))throw new Error('MTU: число от 1200 до 1500');
+  const lim=limGet();if(lim.n>=MAX)throw new Error('Дневной лимит регистраций WARP исчерпан.');
+  const k=await genKeys();
+  const acc=await warpRegister(k.pub,api);
+  limSet({n:lim.n+1,t:lim.t});limShow();
+  const obf=$('#obf').value==='full'
+    ?`Jc = 4\nJmin = 40\nJmax = 70\nS1 = 15\nS2 = 28\nH1 = ${ri(100000000,199999999)}\nH2 = ${ri(200000000,299999999)}\nH3 = ${ri(300000000,399999999)}\nH4 = ${ri(400000000,499999999)}`
+    :`Jc = 4\nJmin = 40\nJmax = 70\nS1 = 0\nS2 = 0\nH1 = 1\nH2 = 2\nH3 = 3\nH4 = 4`;
+  const text=`[Interface]
+PrivateKey = ${k.priv}
+Address = ${acc.v4}/32${acc.v6?', '+acc.v6+'/128':''}
+DNS = ${dns}
+MTU = ${mtu}
+${obf}
+
+[Peer]
+PublicKey = ${acc.peer||DEF.peer}
+AllowedIPs = 0.0.0.0/0, ::/0
+Endpoint = ${ep}
+PersistentKeepalive = 25
+`;
+  return{text,file:'aethernet-warp.conf',mime:'text/plain',kind:'warp'};
+}
+
+/* ---------- Method 2: Workers + VLESS ---------- */
+function buildVless(){
+  const g=id=>$('#'+id).value.trim();
+  const dom=g('wd').toLowerCase();
+  if(!/^([a-z0-9-]+\.)+[a-z]{2,}$/.test(dom))throw new Error('Укажите домен вашего Cloudflare Worker (Расширенные настройки → Workers).');
+  const ip=g('cip')||pick(CLEAN);
+  if(!/^(\d{1,3}\.){3}\d{1,3}$/.test(ip)||ip.split('.').some(x=>+x>255))throw new Error('Clean IP: неверный формат IPv4.');
+  const uuid=g('uid')||crypto.randomUUID();
+  if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuid))throw new Error('UUID: неверный формат.');
+  let path=g('vp')||'/';if(path[0]!=='/')path='/'+path;
+  const tr=$('#tr').value;
+  const q=new URLSearchParams({encryption:'none',security:'tls',sni:dom,fp:'chrome',alpn:tr==='xhttp'?'h2':'h2,http/1.1',type:tr,host:dom,path});
+  if(tr==='xhttp')q.set('mode','packet-up');
+  return{text:`vless://${uuid}@${ip}:443?${q.toString()}#AetherNet-Worker`,file:'aethernet-vless.txt',mime:'text/plain',kind:'vless'};
+}
+
+/* ---------- output ---------- */
+function mask(){
+  return S.kind==='warp'?S.text.replace(/(PrivateKey = .{4}).*/,'$1••••••••••••'):S.text.replace(/^(vless:\/\/.{4})[^@]*/,'$1••••');
+}
+function renderView(){$('#view').textContent=S.shown?S.text:mask();$('#rev').textContent=S.shown?'Скрыть ключ':'Показать ключ'}
+function drawQR(text){
+  const c=$('#cv'),x=c.getContext('2d');
+  try{
+    const q=qrcode(0,'L');q.addData(text,'Byte');q.make();
+    const n=q.getModuleCount(),cell=Math.max(2,Math.floor(320/(n+8))),z=(n+8)*cell;
+    c.width=c.height=z;x.fillStyle='#fff';x.fillRect(0,0,z,z);x.fillStyle='#000';
+    for(let r=0;r<n;r++)for(let k=0;k<n;k++)if(q.isDark(r,k))x.fillRect((k+4)*cell,(r+4)*cell,cell,cell);
+    c.style.display='inline-block';$('#qm').textContent='Отсканируйте из приложения-клиента';
+  }catch(e){c.style.display='none';$('#qm').textContent='Конфигурация слишком велика для QR-кода — скачайте файл.'}
+}
+function show(o){
+  Object.assign(S,{text:o.text,file:o.file,mime:o.mime,kind:o.kind,shown:false});
+  $('#rt').textContent=(S.task==='tor'?'Туннель для Tor · ':'')+(o.kind==='warp'?'AmneziaWG · Cloudflare WARP':'VLESS · Cloudflare Workers');
+  $('#res').classList.remove('hd');
+  renderView();drawQR(o.text);guide();
+  $('#res').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+/* ---------- instructions ---------- */
+function linksHTML(list){return list.map(([n,u])=>`<a class="btn" style="padding:.5rem .8rem" target="_blank" rel="noopener noreferrer" href="${u}">${n} ↗</a>`).join('')}
+function guide(){
+  const vless=S.kind==='vless',tun=(vless?VL:AWG)[S.plat],tor=S.task==='tor';
+  const imp=vless?'Нажмите «Скопировать» и выберите импорт из буфера обмена (или отсканируйте QR-код).':'Нажмите «Скачать файл» и импортируйте .conf («+» → импорт из файла) или отсканируйте QR-код.';
+  let steps=[['Включите туннель',imp+' Затем включите подключение.']];
+  if(S.plat==='router')steps[0][1]='Создайте интерфейс AmneziaWG в LuCI и перенесите параметры из .conf.';
+  if(tor){
+    const ex={
+      ios:'Запустите Onion Browser (iOS) или Tor Browser (macOS). Они работают внутри туннеля, поэтому провайдер видит только Cloudflare.',
+      android:'Используйте Tor Browser: у него свой Tor. Режим VPN в Orbot не включайте: в Android одновременно работает только один VPN.',
+      windows:'Запустите Tor Browser после включения туннеля.',
+      router:'Установите пакет tor на роутер (opkg install tor) и разрешите SOCKS-порт только для локальной сети. Устройства подключаются к нему как к SOCKS5-прокси.'
+    }[S.plat];
+    steps.push(['Запустите Tor',ex]);
+    steps.push(['Если Tor не подключается','Откройте настройки соединения Tor и включите встроенный мост Snowflake. Обычно внутри туннеля хватает прямого подключения.']);
+    steps.push(['Проверьте','Откройте check.torproject.org: страница должна подтвердить, что вы используете Tor. Ваш IP — выходной узел Tor, многие сервисы (в том числе ИИ) такие адреса блокируют.']);
+  }else{
+    steps.push(['Проверьте',vless?'Откройте любой сервис определения IP: адрес должен отличаться от вашего.':'Откройте cloudflare.com/cdn-cgi/trace: в ответе должно быть warp=on.']);
+  }
+  $('#gt').textContent=tor?'Инструкция: Tor через туннель':'Инструкция';
+  $('#apps').innerHTML=linksHTML([...tun,...(tor?TOR[S.plat]:[])]);
+  $('#steps').innerHTML=steps.map(([h,b],i)=>`<details class="st" ${i===0?'open':''}><summary>${i+1}. ${h}</summary><div class="mu" style="font-size:.85rem;line-height:1.55">${b}</div></details>`).join('');
+}
+function apply(){
+  $$('[data-k]').forEach(b=>b.classList.toggle('on',S[b.dataset.k]===b.dataset.v));
+  $('#note').textContent=S.task==='tor'
+    ?'Страница создаёт туннель AmneziaWG (WARP). Tor запускается внутри него отдельным приложением. Приватный ключ генерируется в вашем браузере.'
+    :'Аккаунт Cloudflare WARP создаётся автоматически. Приватный ключ генерируется в вашем браузере и никуда не отправляется.';
+  guide();
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-k]');if(!b)return;
+  S[b.dataset.k]=b.dataset.v;apply();
+});
+
+/* ---------- main action ---------- */
+$('#go').onclick=async()=>{
+  const b=$('#go');if(b.disabled)return;
+  b.disabled=true;b.classList.add('ld');err('');
+  try{
+    const m=$('#mode').value;let o;
+    if(m==='vless')o=buildVless();
+    else{
+      try{o=await buildWarp()}
+      catch(e){
+        if(m==='auto'&&$('#wd').value.trim()){o=buildVless();toast('WARP недоступен — использован Workers',1)}
+        else throw e;
+      }
+    }
+    show(o);
+  }catch(e){err(e.message);if(!/лимит/.test(e.message))$('#adv').open=true}
+  b.classList.remove('ld');b.disabled=false;
+};
+$('#copy').onclick=async()=>{
+  try{await navigator.clipboard.writeText(S.text);toast('Скопировано')}
+  catch(e){
+    const a=document.createElement('textarea');a.value=S.text;document.body.appendChild(a);a.select();
+    let ok=false;try{ok=document.execCommand('copy')}catch(_){}a.remove();
+    if(ok)toast('Скопировано');else{S.shown=true;renderView();toast('Скопируйте вручную',1)}
+  }
+};
+$('#rev').onclick=()=>{S.shown=!S.shown;renderView()};
+$('#dl').onclick=()=>{
+  const u=URL.createObjectURL(new Blob([S.text],{type:S.mime})),a=document.createElement('a');
+  a.href=u;a.download=S.file;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000);
+};
+$('#nip').onclick=()=>{$('#cip').value=pick(CLEAN)};
+$('#cip').value=pick(CLEAN);
+limShow();apply();
+</script>
+</body>
+</html> Куда это
